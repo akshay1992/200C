@@ -14,6 +14,20 @@ int animate = 0;
 
 //--------------------------------------------------------------
 
+ofVec2f convert(ofVec2f &v)
+{
+	int x = v[0] - xRes/2; 
+	int y = -v[1] + yRes/2;
+	return ofVec2f(x, y);	
+}
+
+ofVec2f convert_back(ofVec2f &v)
+{
+	int x = v[0] + xRes/ 2 ;
+	int y = - v[1] + yRes/2 ;
+	return ofVec2f(x, y);	
+}
+
 float compute_dist_gain(ofVec2f &object, float speaker_radius)
 {
 	float relative_distance = object.length()/speaker_radius;
@@ -51,23 +65,33 @@ void ofApp::setup(){
 	particle_system.drawRadius = particle_size;
 	particle_system.clearanceRadius = speakers.radius;
 
-	for (int x1=0; x1<xRes; x1++)
-	for (int y1=0; y1<yRes; y1++)
+	for (int x=0; x<xRes; x++)
+	for (int y=0; y<yRes; y++)
 	{
 		ofVec2f location(x, y);
-
 		if(location.length()<=3*speakers.radius)
 		{
-			ofVec2f v(x, y);
-			v *= 5;
-			particle_system.velocityField.set(x, y, v);
+			ofVec2f velocity(x, y);
+			velocity = convert(velocity);
+			velocity[0] = velocity[0] * velocity[0];
+			velocity[1] = velocity[1] * velocity[1];
+			velocity = convert_back(velocity);
+
+			velocity.normalize();
+
+			particle_system.velocityField.set(x, y, velocity);
 		}
 
 		else
 		{
-			ofVec2f v(x*x, y*y);
-			v = v*2.0/v.length();
-			particle_system.velocityField.set(x, y, v);
+			ofVec2f velocity(x, y);
+			velocity[0] = velocity[0] * velocity[0];
+			velocity[1] = velocity[1] * velocity[1];
+			velocity = convert_back(velocity);
+
+			velocity.normalize();
+
+			particle_system.velocityField.set(x, y, velocity);
 		}
 	}
 
