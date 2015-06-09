@@ -29,7 +29,7 @@ class ofApp : public ofBaseApp{
 
 		int mouseX;
 		int mouseY;
-		ofMutex mouseMutex;
+		ofMutex mouseMutex, freqMutex;
 		SpeakerSetup speakers;
 
 		DLA dla;

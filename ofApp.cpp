@@ -9,6 +9,8 @@ int windowY = yRes+50;
 
 int animate = 0;
 
+float dfreq = 0;
+
 //--------------------------------------------------------------
 
 float compute_dist_gain(ofVec2f &object, float speaker_radius)
@@ -54,6 +56,8 @@ void ofApp::update(){
 
 	int xPos, yPos;
 
+
+
 	// ********************** MOUSE MUTEX START *************************
 	mouseMutex.lock();
 	xPos = mouseX;														//
@@ -65,6 +69,10 @@ void ofApp::update(){
 	dla.mutex.lock();
 	xPos = dla.currentPos[0];											//
 	yPos = dla.currentPos[1];											//
+
+	// Naive Doppler shifts
+	float freq_change = 0.000008*(dla.prevPos.length() - dla.currentPos.length());	//
+
 	dla.mutex.unlock();
 	// ************************ DLA MUTEX END ***************************
 	
@@ -96,6 +104,11 @@ void ofApp::update(){
 
 	gainMutex.unlock();
 	// ************************* GAIN MUTEX END ************************
+
+
+	freqMutex.lock();
+	dfreq = freq_change;
+	freqMutex.unlock();
 
 	cout << gainFR << " " << 
 		    gainFL << " " <<
@@ -142,7 +155,10 @@ void ofApp::audioOut( float * output, int bufferSize, int nChannels ) {
     output[i+1] = gFL*sample; 
     output[i+2] = gRL*sample;
 	output[i+3] = gRR*sample;  
-	phase += 0.02;
+	
+	freqMutex.lock();  
+	phase += 0.04 + dfreq;
+	freqMutex.unlock();
   }
 }
 //--------------------------------------------------------------
