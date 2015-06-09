@@ -8,7 +8,7 @@ public:
 	ofVec2f currentPos;
 	ofVec2f	prevPos;
 
-	void update()
+	void updatePosition()
 	{
 		if( nextPos==currentPos)
 		{

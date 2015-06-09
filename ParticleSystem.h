@@ -1,32 +1,44 @@
 #ifndef PARTICLE_SYSTEM
 #define PARTICLE_SYSTEM
 
-#include "Particle.h"
+#include "SoundObject.h"
 #include "Field.h"
 
 class ParticleSystem
 {
 public:
-	Particle * particle;
+	SoundObject * particle;
 	Field velocityField;
 	int xRes, yRes;
 	int numParticles;
-
+	SpeakerSetup speakers;
+	
 	float clearanceRadius;
 	float drawRadius;
 
 	void init(int xResolution, int yResolution, int numberOfParticles)
 	{
-		numParticles = numberOfParticles;
 		xRes = xResolution;
 		yRes = yResolution;
+
+		speakers.radius = xRes/32.0; // Radius of the speaker setup in pixels
+		speakers.quadSetup();	// Setup quadraphonic system
+
+		clearanceRadius = speakers.radius * 1.5;
+		drawRadius = 2;
+
+		numParticles = numberOfParticles;
 		velocityField.init(xRes, yRes);
-		particle = (Particle * ) malloc(sizeof(Particle) * numParticles);
+		particle = (SoundObject * ) malloc(sizeof(SoundObject) * numParticles);
 
 		for (int i=0; i<numParticles; i++)
 		{
+			particle[i].init();
+			particle[i].initResolution(xRes, yRes);
 			particle[i].setInitialPosition( rand() % xRes, rand() % yRes);
 		}
+
+		setVelocityField();
 	}
 
 	ParticleSystem(void) {}
@@ -47,6 +59,8 @@ public:
 	{
 		for (int i=0; i<numParticles; i++)
 		{
+			particle[i].updatePosition();
+
 			int x1 = particle[i].currentPos[0];
 			int y1 = particle[i].currentPos[1];
 			particle[i].nextPos = particle[i].currentPos + velocityField(x1,y1);
@@ -71,7 +85,7 @@ public:
 				} while (particle[i].currentPos.length()<=clearanceRadius);
 			}
 
-			particle[i].update();
+			particle[i].updateSound(speakers);
 		}
 	}
 
@@ -80,29 +94,33 @@ public:
 	    return y*xRes + x;
 	}
 
-	virtual ofVec2f velocityFieldFunction(int x, int y)
+	ofVec2f velocityFieldFunction_SafeRegion(int x, int y)
+	{
+		return ofVec2f(x, y);
+	}
+
+	ofVec2f velocityFieldFunction(int x, int y)
 	{
 		// Sample field function - replace x and y with your function
 		return ofVec2f(x, y);
 
 		// More samples
-		return ofVec2f(x, y) / pow( x*x + y*y , 1.5);
-
-		return ofVec2f( x*x ,  y*y );
+		// return ofVec2f(x, y) / pow( x*x + y*y , 1.5);
+		// return ofVec2f( x*x ,  y*y );
 	}
 
-	void setVelocityField()
+	void setVelocityField(void)
 	{
 		for (int x=0; x<xRes; x++)
 		for (int y=0; y<yRes; y++)
 		{
 			ofVec2f location(x, y);
-			if(location.length()<=1.5*clearanceRadius)
+			if(location.length()<=clearanceRadius)
 			{
 				// TO keep the particles away from the speakers
 				ofVec2f velocity = convert(location);
+				velocity = velocityFieldFunction_SafeRegion(velocity[0], velocity[0]);
 				velocity = convert_back(velocity);
-
 				velocity.normalize();
 				velocity *= 500;
 
@@ -126,14 +144,14 @@ public:
 	ofVec2f convert(ofVec2f &v)
 	{
 		int x = v[0] - xRes/2; 
-		int y = -v[1] + yRes/2;
+		int y = -1*v[1] + yRes/2;
 		return ofVec2f(x, y);	
 	}
 
 	ofVec2f convert_back(ofVec2f &v)
 	{
 		int x = v[0] + xRes/ 2 ;
-		int y = - v[1] + yRes/2 ;
+		int y = -1* v[1] + yRes/2 ;
 		return ofVec2f(x, y);	
 	}
 

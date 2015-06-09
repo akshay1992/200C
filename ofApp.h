@@ -22,16 +22,8 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		void audioOut( float * output, int bufferSize, int nChannels );
-  		double phase;
 
-  		float gainFL, gainFR, gainRL, gainRR;
-  		ofMutex gainMutex;
-
-		int mouseX;
-		int mouseY;
 		ofMutex mouseMutex;
-		SpeakerSetup speakers;
-
 		ParticleSystem particle_system;
 
 };
