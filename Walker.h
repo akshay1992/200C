@@ -32,6 +32,13 @@ public:
 		setStartingPosition();
 	}
 
+	void respawn(void)
+	{
+		offTheGrid = 0;
+		// setStartingPosition();
+		spawn_anywhere();
+	}
+
 	void walk()
 	{
 		prevPos = currentPos;
@@ -95,6 +102,11 @@ public:
 					currentPos.set( xRes , rand() % yRes ); // Right
 					break;
 		}
+	}
+
+	void spawn_anywhere()
+	{
+		currentPos.set( rand() % xRes, rand() % yRes);
 	}
 };
 

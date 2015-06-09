@@ -1,11 +1,11 @@
 #include "ofApp.h"
 #include <assert.h>
 
-int xRes = 500;
-int yRes = 500;
+int xRes = 1000;
+int yRes = 1000;
 
-int windowX = xRes;
-int windowY = yRes;
+int windowX = xRes+50;
+int windowY = yRes+50;
 
 int animate = 0;
 
@@ -142,7 +142,7 @@ void ofApp::audioOut( float * output, int bufferSize, int nChannels ) {
     output[i+1] = gFL*sample; 
     output[i+2] = gRL*sample;
 	output[i+3] = gRR*sample;  
-	phase += 0.01;
+	phase += 0.02;
   }
 }
 //--------------------------------------------------------------
@@ -159,6 +159,9 @@ void ofApp::keyPressed(int key) {
 			break;
 		case 's':
 			dla.update();
+			break;
+		case 'n':
+			dla.reinit();
 			break;
 	}
 
