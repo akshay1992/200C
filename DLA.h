@@ -13,8 +13,16 @@ public:
 	vector<ofVec2f> aggregate;
 	ofMutex mutex;
 
-	DLA(void) {}
-	DLA(int xResolution, int yResolution) { init(xResolution, yResolution); }
+	DLA(void) 
+	{
+		stepSize = 20;
+	}
+	
+	DLA(int xResolution, int yResolution) 
+	{ 
+		init(xResolution, yResolution);
+		stepSize = 20;
+	}
 
 	void init(int xResolution, int yResolution)
 	{
@@ -26,7 +34,6 @@ public:
 		ofVec2f initialAggregate(xRes/2, yRes/2);
 		aggregate.push_back(initialAggregate);
 
-		stepSize = 20;
 	}
 
 	void update(void)
