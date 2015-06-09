@@ -11,6 +11,7 @@ class DLA : public Walker
 public:
 	ofImage current_frame;
 	vector<ofVec2f> aggregate;
+	ofMutex mutex;
 
 	DLA(void) {}
 	DLA(int xResolution, int yResolution) { init(xResolution, yResolution); }

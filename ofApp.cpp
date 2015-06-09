@@ -41,11 +41,12 @@ float compute_azimuth_gain(ofVec2f &object, ofVec2f &speaker)
 void ofApp::setup(){
 	dla.init(xRes, yRes);
 
-
 	speakers.radius = xRes/32.0; // Radius of the speaker setup in pixels
 	speakers.quadSetup();	// Setup quadraphonic system
 	phase = 0;
 	ofSoundStreamSetup(4, 0); // 4 output channels, 0 input channels
+
+	dla.stepSize = speakers.radius;
 }
 
 //--------------------------------------------------------------
@@ -53,12 +54,19 @@ void ofApp::update(){
 
 	int xPos, yPos;
 
-	// *** MOUSE MUTEX ***
+	// ********************** MOUSE MUTEX START *************************
 	mouseMutex.lock();
-	xPos = mouseX;
-	yPos = mouseY;
+	xPos = mouseX;														//
+	yPos = mouseY;														//
 	mouseMutex.unlock();
-	// *** MOUSE MUTEX ***
+	// ************************ MOUSE MUTEX END *************************
+
+	// *********************** DLA MUTEX START **************************
+	dla.mutex.lock();
+	xPos = dla.currentPos[0];											//
+	yPos = dla.currentPos[1];											//
+	dla.mutex.unlock();
+	// ************************ DLA MUTEX END ***************************
 	
 	xPos = xPos - xRes*0.5;
 	yPos = - yPos + yRes*0.5;
@@ -66,35 +74,34 @@ void ofApp::update(){
 	ofVec2f d(xPos, yPos);
 	float distGain = compute_dist_gain(d, speakers.radius);
 
-    // *** GAIN MUTEX START ***
+    // *********************** GAIN MUTEX START ***********************
 	gainMutex.lock();
-	gainFR = compute_azimuth_gain(d, speakers.channelFR());
-	gainFL = compute_azimuth_gain(d, speakers.channelFL());
-	gainRL = compute_azimuth_gain(d, speakers.channelRL());
-	gainRR = compute_azimuth_gain(d, speakers.channelRR());
+	gainFR = compute_azimuth_gain(d, speakers.channelFR());				//
+	gainFL = compute_azimuth_gain(d, speakers.channelFL());				//
+	gainRL = compute_azimuth_gain(d, speakers.channelRL());				//
+	gainRR = compute_azimuth_gain(d, speakers.channelRR());				//
 
 	// Normalize gains
 	float norm = magnitude4f(gainFR, gainFL, gainRL, gainRR);
-	gainFR /= norm;
-	gainFL /= norm;
-	gainRL /= norm;
-	gainRR /= norm;
+	gainFR /= norm;														//
+	gainFL /= norm;														//
+	gainRL /= norm;														//
+	gainRR /= norm;														//
 
 	// Distance-based gain
-	gainFR *= distGain; 
-	gainFL *= distGain; 
-	gainRL *= distGain; 
-	gainRR *= distGain; 	
+	gainFR *= distGain;													// 
+	gainFL *= distGain;													// 
+	gainRL *= distGain;													// 
+	gainRR *= distGain;													//	
 
 	gainMutex.unlock();
-	// *** GAIN MUTEX END ***
+	// ************************* GAIN MUTEX END ************************
 
 	cout << gainFR << " " << 
 		    gainFL << " " <<
 	 		gainRL << " " <<
 	 		gainRR << " " << endl;
 	cout << "    Power: "<<  magnitude4f(gainFR, gainFL, gainRL, gainRR) << endl;
-
 
 	if(animate)
 	{
@@ -105,8 +112,13 @@ void ofApp::update(){
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-	// ofCircle(xRes/2, yRes/2, speakers.radius);
-	dla.draw(windowY, windowX);
+	ofBackground(0);
+	ofCircle(xRes/2, yRes/2, speakers.radius);
+	
+	dla.mutex.lock();	
+	ofCircle(dla.currentPos[0], dla.currentPos[1], speakers.radius);
+	dla.mutex.unlock();
+	// dla.draw(windowY, windowX);
 
 }
 //--------------------------------------------------------------
@@ -115,14 +127,14 @@ void ofApp::audioOut( float * output, int bufferSize, int nChannels ) {
   static float gFL , gFR;
   static float gRL, gRR;
 
-  // *** GAIN MUTEX START ***
+  // **** GAIN MUTEX START ****
   gainMutex.lock();
-  gFL = gainFL;
-  gFR = gainFR;
-  gRL = gainRL;
-  gRR = gainRR;	
+  gFL = gainFL;				//
+  gFR = gainFR;				//
+  gRL = gainRL;				//
+  gRR = gainRR;				//	
   gainMutex.unlock();
-  // *** GAIN MUTEX END ***
+  // **** GAIN MUTEX END *****
 
   for(int i = 0; i < bufferSize * nChannels; i += nChannels) {
     float sample = sin(phase); 
