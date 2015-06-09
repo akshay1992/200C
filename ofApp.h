@@ -3,7 +3,7 @@
 #include "ofMain.h"
 
 #include "SpeakerSetup.h"
-#include "DLA.h"
+#include "ParticleSystem.h"
 
 class ofApp : public ofBaseApp{
 	public:
@@ -32,5 +32,6 @@ class ofApp : public ofBaseApp{
 		ofMutex mouseMutex;
 		SpeakerSetup speakers;
 
-		DLA dla;
+		ParticleSystem particle_system;
+
 };

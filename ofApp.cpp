@@ -7,6 +7,9 @@ int yRes = 500;
 int windowX = xRes;
 int windowY = yRes;
 
+int numParticles = 50;
+float particle_size = 2;
+
 int animate = 0;
 
 //--------------------------------------------------------------
@@ -39,34 +42,42 @@ float compute_azimuth_gain(ofVec2f &object, ofVec2f &speaker)
 
 // 
 void ofApp::setup(){
-	dla.init(xRes, yRes);
-
 	speakers.radius = xRes/32.0; // Radius of the speaker setup in pixels
 	speakers.quadSetup();	// Setup quadraphonic system
 	phase = 0;
 	ofSoundStreamSetup(4, 0); // 4 output channels, 0 input channels
 
-	dla.stepSize = speakers.radius;
+	particle_system.init(xRes, yRes, numParticles);
+	particle_system.drawRadius = particle_size;
+	particle_system.clearanceRadius = speakers.radius;
+
+	for (int x1=0; x1<xRes; x1++)
+	for (int y1=0; y1<yRes; y1++)
+	{
+		ofVec2f location(x, y);
+
+		if(location.length()<=3*speakers.radius)
+		{
+			ofVec2f v(x, y);
+			v *= 5;
+			particle_system.velocityField.set(x, y, v);
+		}
+
+		else
+		{
+			ofVec2f v(x*x, y*y);
+			v = v*2.0/v.length();
+			particle_system.velocityField.set(x, y, v);
+		}
+	}
+
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
 	int xPos, yPos;
-
-	// ********************** MOUSE MUTEX START *************************
-	mouseMutex.lock();
-	xPos = mouseX;														//
-	yPos = mouseY;														//
-	mouseMutex.unlock();
-	// ************************ MOUSE MUTEX END *************************
-
-	// *********************** DLA MUTEX START **************************
-	dla.mutex.lock();
-	xPos = dla.currentPos[0];											//
-	yPos = dla.currentPos[1];											//
-	dla.mutex.unlock();
-	// ************************ DLA MUTEX END ***************************
 	
 	xPos = xPos - xRes*0.5;
 	yPos = - yPos + yRes*0.5;
@@ -96,16 +107,15 @@ void ofApp::update(){
 
 	gainMutex.unlock();
 	// ************************* GAIN MUTEX END ************************
-
-	cout << gainFR << " " << 
-		    gainFL << " " <<
-	 		gainRL << " " <<
-	 		gainRR << " " << endl;
-	cout << "    Power: "<<  magnitude4f(gainFR, gainFL, gainRL, gainRR) << endl;
+	// cout << gainFR << " " << 
+	// 	    gainFL << " " <<
+	//  		gainRL << " " <<
+	//  		gainRR << " " << endl;
+	// cout << "    Power: "<<  magnitude4f(gainFR, gainFL, gainRL, gainRR) << endl;
 
 	if(animate)
 	{
-		dla.update();
+		particle_system.update();
 	}
 
 
@@ -114,12 +124,9 @@ void ofApp::update(){
 void ofApp::draw(){
 	ofBackground(0);
 	ofCircle(xRes/2, yRes/2, speakers.radius);
-	
-	dla.mutex.lock();	
-	ofCircle(dla.currentPos[0], dla.currentPos[1], speakers.radius);
-	dla.mutex.unlock();
-	// dla.draw(windowY, windowX);
 
+	particle_system.draw();
+	
 }
 //--------------------------------------------------------------
 void ofApp::audioOut( float * output, int bufferSize, int nChannels ) {
@@ -158,7 +165,7 @@ void ofApp::keyPressed(int key) {
 			animate = !animate;
 			break;
 		case 's':
-			dla.update();
+			particle_system.update();
 			break;
 	}
 
@@ -178,6 +185,8 @@ void ofApp::mouseMoved(int x, int y){
 	mouseY = y;
 	mouseMutex.unlock();
 	// ** MOUSE MUTEX END ***
+
+	cout << particle_system.velocityField(x, y) << endl;
 
 }
 
