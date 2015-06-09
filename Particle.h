@@ -19,7 +19,6 @@ public:
 			prevPos = currentPos;
 			currentPos = nextPos;
 		}
-
 	}
 
 	void draw(float radius)

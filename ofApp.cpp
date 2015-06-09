@@ -7,12 +7,23 @@ int yRes = 500;
 int windowX = xRes;
 int windowY = yRes;
 
-int numParticles = 50;
+int numParticles = 3;
 float particle_size = 2;
 
 int animate = 0;
 
 //--------------------------------------------------------------
+
+ofVec2f v_field_function(int x, int y)
+{
+	return ofVec2f(x*x, y*y);
+
+	// if (x!=0 && y!=0)
+	// 	return ofVec2f( x, y ) / pow( x*x + y*y , 1.5);
+	// else
+	// 	return ofVec2f( 2, 2);
+
+}
 
 ofVec2f convert(ofVec2f &v)
 {
@@ -69,22 +80,22 @@ void ofApp::setup(){
 	for (int y=0; y<yRes; y++)
 	{
 		ofVec2f location(x, y);
-		if(location.length()<=3*speakers.radius)
+		if(location.length()<=1.5*speakers.radius)
 		{
-			ofVec2f velocity(x, y);
-			velocity = convert(velocity);
-			velocity[0] = velocity[0] * velocity[0];
-			velocity[1] = velocity[1] * velocity[1];
+			// TO keep the particles away from the speakers
+			ofVec2f velocity = convert(location);
 			velocity = convert_back(velocity);
 
 			velocity.normalize();
+			velocity *= 500;
 
 			particle_system.velocityField.set(x, y, velocity);
 		}
 
 		else
 		{
-			ofVec2f velocity(x, y);
+			// Velocity field
+			ofVec2f velocity = convert(location);
 			velocity[0] = velocity[0] * velocity[0];
 			velocity[1] = velocity[1] * velocity[1];
 			velocity = convert_back(velocity);
@@ -210,7 +221,7 @@ void ofApp::mouseMoved(int x, int y){
 	mouseMutex.unlock();
 	// ** MOUSE MUTEX END ***
 
-	cout << particle_system.velocityField(x, y) << endl;
+	cout << "Velocity Field: " << particle_system.velocityField(x, y) << endl;
 
 }
 

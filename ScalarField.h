@@ -1,31 +1,30 @@
-#ifndef FIELD
-#define FEILD
+#ifndef SCALAR_FIELD
+#define SCALAR_FEILD
 
-class Field
+class ScalarField
 {
 public:
-	ofVec2f * data;	
+	float * data;	
 	int xRes, yRes;
 
-	Field(void) {}
-	~Field(void) {free(data);}
-
+	ScalarField(void) {}
+	~ScalarField(void) {free(data);}
 
 	void init(int xResolution, int yResolution)
 	{
 		xRes = xResolution;
 		yRes = yResolution;
-		data = (ofVec2f*) malloc(sizeof(ofVec2f) * xRes*yRes);
+		data = (float*) malloc(sizeof(float) * xRes*yRes);
 		for(int i=0; i<xRes*yRes; i++)
-			data[i].set(0,0);
+			data[i] = 0 ;
 	}
 
-	void set(int x, int y, ofVec2f &v)
+	void set(int x, int y, float v)
 	{
 		data[getIndex(x, y)] = v;
 	}
 
-	ofVec2f operator()(int x, int y)
+	float operator()(int x, int y)
 	{
 		return data[getIndex(x, y)];
 	}
